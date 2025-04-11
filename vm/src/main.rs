@@ -1,10 +1,4 @@
-use std::{
-    collections::HashMap,
-    fs,
-    io::Read,
-    path::{PathBuf, PrefixComponent},
-    str::FromStr,
-};
+use std::{collections::HashMap, fs, io::Read, path::PathBuf, str::FromStr};
 
 fn read_file(filename: PathBuf) -> Result<Vec<u16>, std::io::Error> {
     let file = fs::File::open(filename);
