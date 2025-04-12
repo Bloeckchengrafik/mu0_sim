@@ -1,5 +1,6 @@
 module mu0 (
-    input clk
+    input clk,
+    output reg [511:0] memory
 );
 
 endmodule

@@ -1,6 +1,6 @@
 .PHONY: build upload docker
 
-SOURCES=src/comm.v src/uart.v src/mux.v src/main.v
+SOURCES=src/comm.v src/uart.v src/mux.v src/mu0.v src/memory.v src/alu.v src/main.v
 
 build: $(SOURCES)
 	mkdir -p build
@@ -33,3 +33,16 @@ test_mux:
 	mkdir -p test
 	iverilog -o test/mux_test.o -s mux_tb src/mux.v testbenches/mux_tb.v
 	cd test/ && vvp mux_test.o
+
+test_memory:
+	mkdir -p test
+	iverilog -o test/memory_test.o -s memory_tb src/memory.v testbenches/memory_tb.v
+	cd test/ && vvp memory_test.o
+
+
+test_alu:
+	mkdir -p test
+	iverilog -o test/alu_test.o -s alu_tb src/alu.v testbenches/alu_tb.v
+	cd test/ && vvp alu_test.o
+
+tests: test_uart test_mux test_memory test_alu

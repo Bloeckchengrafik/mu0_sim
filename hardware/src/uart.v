@@ -3,8 +3,9 @@
 module uart #(
     parameter DELAY_FRAMES = 234  // 27,000,000 (27Mhz) / 115200 Baud rate
 ) (
-    input  clk,
-    input  uart_rx,
+    input clk,
+    input uart_rx,
+    input [511:0] memory,
     output uart_tx
 );
 
