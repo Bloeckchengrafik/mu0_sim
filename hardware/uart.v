@@ -3,11 +3,9 @@
 module uart #(
     parameter DELAY_FRAMES = 234  // 27,000,000 (27Mhz) / 115200 Baud rate
 ) (
-    input clk,
-    input uart_rx,
-    output uart_tx,
-    output reg [5:0] led,
-    input btn1
+    input  clk,
+    input  uart_rx,
+    output uart_tx
 );
 
     localparam HALF_DELAY_WAIT = (DELAY_FRAMES / 2);
@@ -31,8 +29,8 @@ module uart #(
                     rxState <= RX_STATE_START_BIT;
                     rxCounter <= 1;
                     rxBitNumber <= 0;
-                    byteReady <= 0;
                 end
+                byteReady <= 0;
             end
             RX_STATE_START_BIT: begin
                 if (rxCounter == HALF_DELAY_WAIT) begin
@@ -64,38 +62,15 @@ module uart #(
         endcase
     end
 
-    always @(posedge clk) begin
-        if (byteReady) begin
-            led <= ~dataIn[5:0];
-        end
-    end
-
     reg [3:0] txState = 0;
     reg [24:0] txCounter = 0;
-    reg [7:0] dataOut = 0;
+    wire [7:0] dataOut;
     reg txPinRegister = 1;
     reg [2:0] txBitNumber = 0;
-    reg [3:0] txByteCounter = 0;
+    wire byteReadyOut;
+    reg byteSending = 0;
 
     assign uart_tx = txPinRegister;
-
-    localparam MEMORY_LENGTH = 12;
-    reg [7:0] testMemory[MEMORY_LENGTH-1:0];
-
-    initial begin
-        testMemory[0]  = "w";
-        testMemory[1]  = "e";
-        testMemory[2]  = " ";
-        testMemory[3]  = "a";
-        testMemory[4]  = "r";
-        testMemory[5]  = "e";
-        testMemory[6]  = " ";
-        testMemory[7]  = "m";
-        testMemory[8]  = "u";
-        testMemory[9]  = "-";
-        testMemory[10] = "0";
-        testMemory[11] = " ";
-    end
 
     localparam TX_STATE_IDLE = 0;
     localparam TX_STATE_START_BIT = 1;
@@ -106,10 +81,10 @@ module uart #(
     always @(posedge clk) begin
         case (txState)
             TX_STATE_IDLE: begin
-                if (btn1 == 0) begin
+                if (byteReadyOut) begin
                     txState <= TX_STATE_START_BIT;
                     txCounter <= 0;
-                    txByteCounter <= 0;
+                    byteSending <= 1;
                 end else begin
                     txPinRegister <= 1;
                 end
@@ -118,7 +93,6 @@ module uart #(
                 txPinRegister <= 0;
                 if ((txCounter + 1) == DELAY_FRAMES) begin
                     txState <= TX_STATE_WRITE;
-                    dataOut <= testMemory[txByteCounter];
                     txBitNumber <= 0;
                     txCounter <= 0;
                 end else txCounter <= txCounter + 1;
@@ -138,22 +112,27 @@ module uart #(
             TX_STATE_STOP_BIT: begin
                 txPinRegister <= 1;
                 if ((txCounter + 1) == DELAY_FRAMES) begin
-                    if (txByteCounter == MEMORY_LENGTH - 1) begin
-                        txState <= TX_STATE_DEBOUNCE;
-                    end else begin
-                        txByteCounter <= txByteCounter + 1;
-                        txState <= TX_STATE_START_BIT;
-                    end
+                    txState <= TX_STATE_DEBOUNCE;
                     txCounter <= 0;
+                    byteSending <= 0;
                 end else txCounter <= txCounter + 1;
             end
             TX_STATE_DEBOUNCE: begin
-                if (txCounter == 23'b11111111111111111111111) begin
-                    if (btn1 == 1) txState <= TX_STATE_IDLE;
+                if (txCounter == 23'b00001111111111111111111) begin
+                    txState <= TX_STATE_IDLE;
                 end else txCounter <= txCounter + 1;
             end
             default: begin
             end
         endcase
     end
+
+    comm comm_inst (
+        .clk(clk),
+        .byteReady(byteReady),
+        .dataIn(dataIn),
+        .byteReadyOut(byteReadyOut),
+        .dataOut(dataOut),
+        .byteSending(byteSending),
+    );
 endmodule

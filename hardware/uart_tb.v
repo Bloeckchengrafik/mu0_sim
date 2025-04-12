@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module test ();
+module uart_tb ();
     reg clk = 0;
     reg uart_rx = 1;
     wire uart_tx;
