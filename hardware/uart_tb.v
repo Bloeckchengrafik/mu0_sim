@@ -17,7 +17,7 @@ module uart_tb ();
 
     initial begin
         $dumpfile("uart.vcd");
-        $dumpvars(0, test);
+        $dumpvars(0, uart_tb);
     end
 
     always #1 clk = ~clk;

@@ -22,7 +22,6 @@ module comm (
     output reg [7:0] dataOut
 );
     localparam COMM_STATE_IDLE = 0;
-    localparam COMM_STATE_ECHO = 1;
     localparam COMM_STATE_RXMEM = 2;
     localparam COMM_STATE_EXSTART = 3;
     localparam COMM_STATE_EXSTATE = 4;
@@ -33,25 +32,26 @@ module comm (
         dataOut = 0;
     end
 
-    reg [3:0] comm_state = COMM_STATE_IDLE;
+    reg [3:0] commState = COMM_STATE_IDLE;
     reg byteReceived = 0;
-    event useByte;
 
     always @(posedge clk) begin
         if (byteReady && !byteSending && !byteReceived) begin
             byteReceived <= 1'b1;
-            ->useByte;
+
+            if (dataIn == "p") begin
+                byteReadyOut <= 1'b1;
+                dataOut <= "P";
+            end else begin
+                byteReadyOut <= 1'b1;
+                dataOut <= "?";
+            end
         end
 
         if (byteSending) begin
             byteReadyOut <= 1'b0;
             byteReceived <= 1'b0;
         end
-    end
-
-    always @(useByte) begin
-        byteReadyOut <= 1'b1;
-        dataOut <= dataIn;
     end
 
 endmodule
