@@ -5,11 +5,11 @@ module memory_tb;
     // Inputs
     reg memRq;
     reg readNotWrite;
-    reg [7:0] addr;
-    reg [7:0] dataIn;
+    reg [15:0] addr;
+    reg [15:0] dataIn;
 
     // Outputs
-    wire [7:0] dataOut;
+    wire [15:0] dataOut;
 
     // Instantiate the memory module
     memory uut (

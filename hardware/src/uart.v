@@ -5,8 +5,12 @@ module uart #(
 ) (
     input clk,
     input uart_rx,
-    input [511:0] memory,
-    output uart_tx
+    output uart_tx,
+    output overrideMemControl,
+    output overrideMemRnW,
+    output [15:0] overrideMemAddr,
+    output [15:0] overrideMemDataIn,
+    input [15:0] overrideMemDataOut
 );
 
     localparam HALF_DELAY_WAIT = (DELAY_FRAMES / 2);
@@ -135,5 +139,10 @@ module uart #(
         .byteReadyOut(byteReadyOut),
         .dataOut(dataOut),
         .byteSending(byteSending),
+        .overrideMemControl(overrideMemControl),
+        .overrideMemRnW(overrideMemRnW),
+        .overrideMemAddr(overrideMemAddr),
+        .overrideMemDataIn(overrideMemDataIn),
+        .overrideMemDataOut(overrideMemDataOut)
     );
 endmodule
