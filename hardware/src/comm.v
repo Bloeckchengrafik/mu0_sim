@@ -51,10 +51,6 @@ module comm (
     reg hasReceivedLastByte = 0;
 
     always @(posedge clk) begin
-        overrideMemControl <= 1'b0;
-        overrideMemRnW <= 1'b0;
-        overrideMemAddr <= 16'b0;
-
         if (byteReady && !byteSending && !byteReceived) begin
             byteReceived <= 1'b1;
 
@@ -93,11 +89,11 @@ module comm (
                         overrideMemAddr <= memCounter;
                         overrideMemRnW <= 1'b1;
                         if (hasReceivedLastByte) begin
-                            dataOut <= overrideMemDataOut[7:0];
+                            dataOut <= overrideMemDataOut[15:8];
                             memCounter <= memCounter + 1;
                             hasReceivedLastByte <= 1'b0;
                         end else begin
-                            dataOut <= overrideMemDataOut[15:8];
+                            dataOut <= overrideMemDataOut[7:0];
                             hasReceivedLastByte <= 1'b1;
                         end
                     end else begin
@@ -113,10 +109,9 @@ module comm (
                             byteReadyOut <= 1'b1;
                             overrideMemControl <= 1'b1;
                             overrideMemAddr <= memCounter;
-                            overrideMemRnW <= 1'b1;
+                            overrideMemRnW <= 1'b0;
                             dataOut <= "-";
-                            // overrideMemDataIn <= {lastRxByte, dataIn};
-                            overrideMemDataIn <= "ll";
+                            overrideMemDataIn <= {dataIn, lastRxByte};
                             memCounter <= memCounter + 1;
                             hasReceivedLastByte <= 1'b0;
                         end else begin

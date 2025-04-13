@@ -7,30 +7,31 @@ module mu0 (
     output reg [15:0] overrideMemDataOut,
     output [5:0] led
 );
-    reg memRq;
-    reg readNotWrite;
-    reg [15:0] addr;
-    reg [15:0] dataIn;
+    reg memRq = 0;
+    reg readNotWrite = 1;
+    reg [15:0] addr = 0;
+    reg [15:0] dataIn = 0;
+
+    wire _memRq;
+    wire _readNotWrite;
+    wire [15:0] _addr;
+    wire [15:0] _dataIn;
     wire [15:0] dataOut;
 
     memory mem (
-        .memRq(memRq),
-        .readNotWrite(readNotWrite),
-        .addr(addr),
-        .dataIn(dataIn),
+        .clk(clk),
+        .memRq(_memRq),
+        .readNotWrite(_readNotWrite),
+        .addr(_addr),
+        .dataIn(_dataIn),
         .dataOut(dataOut),
         .led(led)
     );
 
-    always @(posedge clk) begin
-        if (overrideMemControl) begin
-            memRq <= 1'b1;
-            readNotWrite <= overrideMemRnW;
-            addr <= overrideMemAddr;
-            dataIn <= overrideMemDataIn;
-            overrideMemDataOut <= dataOut;
-        end else begin
-            memRq <= 1'b0;
-        end
-    end
+    assign overrideMemDataOut = dataOut;
+    assign _memRq = overrideMemControl ? 1 : memRq;
+    assign _readNotWrite = overrideMemControl ? overrideMemRnW : readNotWrite;
+    assign _addr = overrideMemControl ? overrideMemAddr : addr;
+    assign _dataIn = overrideMemControl ? overrideMemDataIn : dataIn;
+    assign led = overrideMemControl ? 6'b000000 : 6'b110011;
 endmodule

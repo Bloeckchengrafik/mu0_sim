@@ -30,11 +30,11 @@ pub fn flash(path: &str, port: &str) {
     sleep(Duration::from_millis(10));
     for i in 0..64 {
         port.write(&[buffer[i]]).unwrap();
-        sleep(Duration::from_millis(50));
+        sleep(Duration::from_millis(10));
         port.read(&mut buf).unwrap();
         print!("{}", char::from_u32(buf[0] as u32).unwrap());
         std::io::stdout().flush().unwrap();
-        sleep(Duration::from_millis(50));
+        sleep(Duration::from_millis(10));
     }
 
     port.write(b"-").unwrap();

@@ -57,12 +57,12 @@ pub fn read(port: &str) {
     sleep(Duration::from_millis(10));
     for i in 0..64 {
         port.write(&[0]).unwrap();
-        sleep(Duration::from_millis(50));
+        sleep(Duration::from_millis(10));
         port.read(&mut buf).unwrap();
         buffer[i] = buf[0];
         print!(".");
         std::io::stdout().flush().unwrap();
-        sleep(Duration::from_millis(50));
+        sleep(Duration::from_millis(10));
     }
 
     port.write(b"-").unwrap();
@@ -74,14 +74,20 @@ pub fn read(port: &str) {
 
         for (i, val) in buffer.chunks(2).enumerate() {
             let as_u16 = (val[0] as u16) << 8 | val[1] as u16;
+            let as_char = char::from_u32(as_u16 as u32).unwrap_or('?');
+            let as_charl = char::from_u32(val[0] as u32).unwrap_or('?');
+            let as_charh = char::from_u32(val[1] as u32).unwrap_or('?');
             println!(
-                "{:<4} {:02X}{:02X} | {:08b}{:08b} | {:<5} | {:?}",
+                "{:<4} {:02X}{:02X} | {:08b}{:08b} | {:<5} {}: {} {} | {:?}",
                 i,
                 val[0],
                 val[1],
                 val[0],
                 val[1],
                 as_u16,
+                as_char,
+                as_charl,
+                as_charh,
                 Instruction::from(as_u16)
             );
         }
