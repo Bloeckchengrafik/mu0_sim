@@ -28,8 +28,8 @@ impl From<u16> for Instruction {
             2 => Instruction::Add(arg),
             3 => Instruction::Sub(arg),
             4 => Instruction::Jmp(arg),
-            5 => Instruction::Jne(arg),
-            6 => Instruction::Jge(arg),
+            5 => Instruction::Jge(arg),
+            6 => Instruction::Jne(arg),
             7 => Instruction::Stp,
             _ => Instruction::Unknown,
         }

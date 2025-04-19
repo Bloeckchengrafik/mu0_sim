@@ -37,8 +37,8 @@ impl TryFrom<u16> for Instruction {
             2 => Ok(Instruction::Add(arg)),
             3 => Ok(Instruction::Sub(arg)),
             4 => Ok(Instruction::Jmp(arg)),
-            5 => Ok(Instruction::Jne(arg)),
-            6 => Ok(Instruction::Jge(arg)),
+            5 => Ok(Instruction::Jge(arg)),
+            6 => Ok(Instruction::Jne(arg)),
             7 => Ok(Instruction::Stp),
             _ => Err(anyhow::anyhow!("Unknown opcode")),
         }
