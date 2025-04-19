@@ -7,14 +7,14 @@ module memory (
     output reg [15:0] dataOut,
     output reg [ 5:0] led
 );
-    reg [15:0] memory[31:0];
+    reg [15:0] memory[32];
     wire [4:0] mem_addr = addr[4:0];
 
     // Initialize memory (optional, useful for simulation)
     reg [4:0] i;
     initial begin
         for (i = 0; i < 32; i = i + 1) begin
-            memory[i] = 16'h0505;
+            memory[i] = 16'b0101010101010101;
         end
     end
 
@@ -31,4 +31,6 @@ module memory (
             dataOut = 16'hbfbf;
         end
     end
+
+    assign led = ~memory[0][0:7];
 endmodule

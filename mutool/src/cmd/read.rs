@@ -18,6 +18,14 @@ enum Instruction {
     Unknown,
 }
 
+fn sanitize_char(from: char) -> char {
+    if from.is_ascii() && from.is_ascii_graphic() {
+        from
+    } else {
+        '?'
+    }
+}
+
 impl From<u16> for Instruction {
     fn from(value: u16) -> Self {
         let opcode = value >> 12;
@@ -51,16 +59,21 @@ pub fn read(port: &str) {
         println!("Connection failed");
     }
     let mut buffer = vec![0u8; 64];
+    let mut read_buffer = vec![0u8; 1];
 
     port.write(b"r").unwrap();
     port.read(&mut buf).unwrap();
     sleep(Duration::from_millis(10));
-    for i in 0..64 {
+    for i in 0..32 {
         port.write(&[0]).unwrap();
-        sleep(Duration::from_millis(10));
-        port.read(&mut buf).unwrap();
-        buffer[i] = buf[0];
-        print!(".");
+        port.read_exact(&mut read_buffer).unwrap();
+        port.write(&[0]).unwrap();
+        port.read_exact(&mut read_buffer).unwrap();
+        buffer[i * 2] = read_buffer[0];
+        port.write(&[0]).unwrap();
+        port.read_exact(&mut read_buffer).unwrap();
+        buffer[i * 2 + 1] = read_buffer[0];
+        print!("-+");
         std::io::stdout().flush().unwrap();
         sleep(Duration::from_millis(10));
     }
@@ -71,28 +84,25 @@ pub fn read(port: &str) {
     port.read(&mut buf).unwrap();
     if buf[0] == b'E' {
         println!("\nRead successful");
-
-        for (i, val) in buffer.chunks(2).enumerate() {
-            let as_u16 = (val[0] as u16) << 8 | val[1] as u16;
-            let as_char = char::from_u32(as_u16 as u32).unwrap_or('?');
-            let as_charl = char::from_u32(val[0] as u32).unwrap_or('?');
-            let as_charh = char::from_u32(val[1] as u32).unwrap_or('?');
-            println!(
-                "{:<4} {:02X}{:02X} | {:08b}{:08b} | {:<5} {}: {} {} | {:?}",
-                i,
-                val[0],
-                val[1],
-                val[0],
-                val[1],
-                as_u16,
-                as_char,
-                as_charl,
-                as_charh,
-                Instruction::from(as_u16)
-            );
-        }
-        println!();
     } else {
         println!("\nRead failed");
+    }
+
+    for (i, val) in buffer.chunks(2).enumerate() {
+        let as_u16 = (val[0] as u16) << 8 | val[1] as u16;
+        let as_charl = sanitize_char(char::from_u32(val[0] as u32).unwrap_or('?'));
+        let as_charh = sanitize_char(char::from_u32(val[1] as u32).unwrap_or('?'));
+        println!(
+            "{:<4} {:02X}{:02X} | {:08b}{:08b} | {:<5}: {} {} | {:?}",
+            i,
+            val[0],
+            val[1],
+            val[0],
+            val[1],
+            as_u16,
+            as_charl,
+            as_charh,
+            Instruction::from(as_u16)
+        );
     }
 }

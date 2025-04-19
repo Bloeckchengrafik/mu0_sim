@@ -48,7 +48,7 @@ module comm (
     reg byteReceived = 0;
     reg [7:0] memCounter = 0;
     reg [7:0] lastRxByte = 0;
-    reg hasReceivedLastByte = 0;
+    reg [1:0] hasReceivedLastByte = 0;
 
     always @(posedge clk) begin
         if (byteReady && !byteSending && !byteReceived) begin
@@ -66,13 +66,13 @@ module comm (
                             memCounter <= 0;
                             byteReadyOut <= 1'b1;
                             dataOut <= "R";
-                            hasReceivedLastByte <= 1'b0;
+                            hasReceivedLastByte <= 2'b0;
                         end
                         "w": begin
                             commState <= COMM_STATE_RXMEM;
                             memCounter <= 0;
                             byteReadyOut <= 1'b1;
-                            hasReceivedLastByte <= 1'b0;
+                            hasReceivedLastByte <= 2'b0;
                             dataOut <= "W";
                         end
                         default: begin
@@ -85,16 +85,19 @@ module comm (
                 COMM_STATE_TXMEM: begin
                     if (memCounter < MAX_MEMORY_COUNT) begin
                         byteReadyOut <= 1'b1;
-                        overrideMemControl <= 1'b1;
-                        overrideMemAddr <= memCounter;
-                        overrideMemRnW <= 1'b1;
-                        if (hasReceivedLastByte) begin
+                        overrideMemAddr = memCounter;
+                        overrideMemControl = 1'b1;
+                        overrideMemRnW = 1'b1;
+                        if (hasReceivedLastByte == 2'b0) begin
+                            hasReceivedLastByte = 2'b01;
+                            dataOut <= 8'b11111111;
+                        end else if (hasReceivedLastByte == 2'b01) begin
+                            dataOut <= overrideMemDataOut[7:0];
+                            hasReceivedLastByte <= 2'b10;
+                        end else begin
                             dataOut <= overrideMemDataOut[15:8];
                             memCounter <= memCounter + 1;
-                            hasReceivedLastByte <= 1'b0;
-                        end else begin
-                            dataOut <= overrideMemDataOut[7:0];
-                            hasReceivedLastByte <= 1'b1;
+                            hasReceivedLastByte <= 2'b0;
                         end
                     end else begin
                         commState <= COMM_STATE_IDLE;
@@ -106,7 +109,6 @@ module comm (
                 COMM_STATE_RXMEM: begin
                     if (memCounter < MAX_MEMORY_COUNT) begin
                         if (hasReceivedLastByte) begin
-                            byteReadyOut <= 1'b1;
                             overrideMemControl <= 1'b1;
                             overrideMemAddr <= memCounter;
                             overrideMemRnW <= 1'b0;
@@ -114,6 +116,7 @@ module comm (
                             overrideMemDataIn <= {dataIn, lastRxByte};
                             memCounter <= memCounter + 1;
                             hasReceivedLastByte <= 1'b0;
+                            byteReadyOut <= 1'b1;
                         end else begin
                             byteReadyOut <= 1'b1;
                             dataOut <= "+";

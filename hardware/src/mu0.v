@@ -33,5 +33,4 @@ module mu0 (
     assign _readNotWrite = overrideMemControl ? overrideMemRnW : readNotWrite;
     assign _addr = overrideMemControl ? overrideMemAddr : addr;
     assign _dataIn = overrideMemControl ? overrideMemDataIn : dataIn;
-    assign led = overrideMemControl ? 6'b000000 : 6'b110011;
 endmodule
