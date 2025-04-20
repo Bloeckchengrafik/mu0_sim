@@ -26,6 +26,9 @@ pub enum Commands {
     Read {
         /// Device to flash
         device: String,
+
+        /// Path to the firmware image for label resolution
+        path: Option<String>,
     },
 }
 
@@ -34,7 +37,7 @@ impl Commands {
         match self {
             Commands::ListPorts => list_ports::list_ports(),
             Commands::Flash { path, device } => flash::flash(path, device),
-            Commands::Read { device } => read::read(device),
+            Commands::Read { device, path } => read::read(device, path),
         }
     }
 }

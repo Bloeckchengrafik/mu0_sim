@@ -11,6 +11,7 @@ module main (
     wire [15:0] overrideMemAddr;
     wire [15:0] overrideMemDataIn;
     wire [15:0] overrideMemDataOut;
+    reg enable;
 
     mu0 mu0_inst (
         .clk(clk),
@@ -19,7 +20,9 @@ module main (
         .overrideMemAddr(overrideMemAddr),
         .overrideMemDataIn(overrideMemDataIn),
         .overrideMemDataOut(overrideMemDataOut),
-        .led(led)
+        .led(led),
+        .enable(enable),
+        .reset(btn1)
     );
 
     uart uart (
