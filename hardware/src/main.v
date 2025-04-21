@@ -51,12 +51,13 @@ module main (
         .dbgAluOp(dbgAluOp)
     );
 
-    assign led[0] = ~(slowClk);
-    assign led[1] = ~enable;
-    assign led[2] = ~overrideMemControl;
-    assign led[3] = ~ir[14];
-    assign led[4] = ~ir[13];
-    assign led[5] = ~ir[12];
+    // assign led[0] = ~(slowClk);
+    // assign led[1] = ~enable;
+    // assign led[2] = ~overrideMemControl;
+    // assign led[3] = ~ir[14];
+    // assign led[4] = ~ir[13];
+    // assign led[5] = ~ir[12];
+    assign led[0:5] = pc[0:5];
 
     uart uart (
         .clk(clk),

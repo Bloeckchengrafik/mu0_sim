@@ -97,8 +97,6 @@ module mu0 (
     end
 
     always @(posedge clk) begin
-        pc = "te";
-
         if (oldStart != start) begin
             oldStart = start;
             state = PROC_STATE_FETCH;
@@ -155,7 +153,7 @@ module mu0 (
                             aSel = 1;
                             bSel = 1;
                             accOe = 1;
-                            accie = 1;
+                            accIe = 1;
                             pcOe = 0;
                             pcIe = 0;
                             irIe = 0;
@@ -167,7 +165,7 @@ module mu0 (
                             aSel = 1;
                             bSel = 1;
                             accOe = 1;
-                            accie = 1;
+                            accIe = 1;
                             pcOe = 0;
                             pcIe = 0;
                             irIe = 0;
@@ -217,9 +215,11 @@ module mu0 (
                     if (accIe) begin
                         acc = aluResult;
                     end
+
                     if (pcIe) begin
-                        pc = 16'b0101010101010101;  //aluResult;
+                        pc = aluResult;
                     end
+
                     if (irIe) begin
                         ir = dataOut;
                     end

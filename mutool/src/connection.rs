@@ -197,8 +197,10 @@ impl Device {
 
     pub fn transact(&mut self, s: u8) -> u8 {
         self.0.write(&[s]).unwrap();
+        sleep(Duration::from_millis(10));
         let mut buf = [0; 1024];
         self.0.read(&mut buf).unwrap();
+        sleep(Duration::from_millis(10));
         return buf[0];
     }
 
@@ -207,8 +209,8 @@ impl Device {
         let upper_ir = self.transact(b'i') as u16;
         let ir = upper_ir << 8 | lower_ir;
 
-        let lower_pc = self.transact(b'P') as u16;
-        let upper_pc = self.transact(b'p') as u16;
+        let lower_pc = self.transact(b'C') as u16;
+        let upper_pc = self.transact(b'c') as u16;
         let pc = upper_pc << 8 | lower_pc;
 
         let lower_acc = self.transact(b'A') as u16;
