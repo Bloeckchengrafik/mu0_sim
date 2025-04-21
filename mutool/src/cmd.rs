@@ -1,3 +1,4 @@
+mod debug;
 mod exec;
 mod flash;
 mod list_ports;
@@ -36,6 +37,8 @@ pub enum Commands {
         /// Device
         device: String,
     },
+    /// Debug the mu0
+    Debug { device: String },
 }
 
 impl Commands {
@@ -45,6 +48,7 @@ impl Commands {
             Commands::Flash { path, device } => flash::flash(path, device),
             Commands::Read { device, path } => read::read(device, path),
             Commands::Exec { device } => exec::exec(device),
+            Commands::Debug { device } => debug::debug(device),
         }
     }
 }

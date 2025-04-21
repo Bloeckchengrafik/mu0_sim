@@ -7,4 +7,8 @@ read:
 exec:
 	cargo r -- exec /dev/ttyUSB1
 
+debug:
+	cargo r -- debug /dev/ttyUSB1
+
 all: flash read exec read
+all-dbg: flash exec debug

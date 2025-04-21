@@ -10,7 +10,12 @@ module mu0 (
     output reg [15:0] overrideMemDataOut,
     output reg done = 0,
     input start,
-    output reg [15:0] ir = 0
+    output reg [15:0] ir = 0,
+    output reg [15:0] pc = 16'b0,
+    output reg [15:0] acc = 0,
+    output reg [7:0] state = 0,
+    output [15:0] dbgAluResult,
+    output [3:0] dbgAluOp
 );
     localparam ALUOP_ZERO = 0;
     localparam ALUOP_ADD = 1;
@@ -36,9 +41,6 @@ module mu0 (
         .dataIn(_dataIn),
         .dataOut(dataOut),
     );
-
-    reg [15:0] acc = 0;
-    reg [15:0] pc = 0;
 
     reg aSel = 0;
     reg bSel = 0;
@@ -73,6 +75,9 @@ module mu0 (
         .result(aluResult)
     );
 
+    assign dbgAluResult = aluResult;
+    assign dbgAluOp = op;
+
     localparam PROC_STATE_FETCH = 0;
     localparam PROC_STATE_FETCHSTORE = 1;
     localparam PROC_STATE_EXEC = 2;
@@ -87,25 +92,25 @@ module mu0 (
     localparam OP_JNE = 4'b0110;
     localparam OP_STP = 4'b0111;
 
-    reg [8:0] state = PROC_STATE_FETCH;
-
     always @(posedge enable) begin
         done = 0;
     end
 
     always @(posedge clk) begin
+        pc = "te";
+
         if (oldStart != start) begin
             oldStart = start;
             state = PROC_STATE_FETCH;
-            acc = 0;
-            pc = 0;
+            acc = 16'b0;
+            pc = 16'b0;
         end
 
         if (reset) begin
             state = PROC_STATE_FETCH;
-            acc = 0;
-            pc = 0;
-            ir = 0;
+            acc = 16'b0;
+            pc = 16'b0;
+            ir = 16'b0;
         end else begin
             case (state)
                 PROC_STATE_FETCH: begin
@@ -119,9 +124,10 @@ module mu0 (
                     memRq = 1;
                     readNotWrite = 1;
 
-                    state = PROC_STATE_EXEC;
+                    state = PROC_STATE_FETCHSTORE;
                 end
                 PROC_STATE_EXEC: begin
+                    state = PROC_STATE_STORE;
                     case (ir[15:12])
                         OP_LDA: begin
                             aSel  = 1;
@@ -212,7 +218,7 @@ module mu0 (
                         acc = aluResult;
                     end
                     if (pcIe) begin
-                        pc = aluResult;
+                        pc = 16'b0101010101010101;  //aluResult;
                     end
                     if (irIe) begin
                         ir = dataOut;

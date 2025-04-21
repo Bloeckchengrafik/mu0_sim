@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 
 #[derive(Debug)]
 #[allow(dead_code)]
-enum Instruction {
+pub enum Instruction {
     Lda(u16),
     Sto(u16),
     Add(u16),
@@ -14,7 +14,7 @@ enum Instruction {
     Unknown,
 }
 
-fn sanitize_char(from: char) -> char {
+pub fn sanitize_char(from: char) -> char {
     if from.is_ascii() && from.is_ascii_graphic() {
         from
     } else {

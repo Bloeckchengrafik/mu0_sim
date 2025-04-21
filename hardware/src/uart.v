@@ -12,7 +12,14 @@ module uart #(
     output [15:0] overrideMemDataIn,
     input [15:0] overrideMemDataOut,
     output start,
-    input enable
+    input enable,
+    input [15:0] dbgIr,
+    input [15:0] dbgPc,
+    input [15:0] dbgAcc,
+    input [8:0] dbgState,
+    output [3:0] clkMode,
+    input [15:0] dbgAluResult,
+    input [3:0] dbgAluOp
 );
 
     localparam HALF_DELAY_WAIT = (DELAY_FRAMES / 2);
@@ -147,6 +154,13 @@ module uart #(
         .overrideMemDataIn(overrideMemDataIn),
         .overrideMemDataOut(overrideMemDataOut),
         .start(start),
-        .enable(enable)
+        .enable(enable),
+        .dbgIr(dbgIr),
+        .dbgPc(dbgPc),
+        .dbgAcc(dbgAcc),
+        .dbgState(dbgState),
+        .clkMode(clkMode),
+        .dbgAluResult(dbgAluResult),
+        .dbgAluOp(dbgAluOp)
     );
 endmodule
