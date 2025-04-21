@@ -1,14 +1,16 @@
 module mu0 (
     input clk,
+    input fastClk,
     input overrideMemControl,
     input overrideMemRnW,
     input [15:0] overrideMemAddr,
     input [15:0] overrideMemDataIn,
-    inout enable,
+    input enable,
     input reset,
     output reg [15:0] overrideMemDataOut,
-    output [5:0] led,
-    output reg done = 0
+    output reg done = 0,
+    input start,
+    output reg [15:0] ir = 0
 );
     localparam ALUOP_ZERO = 0;
     localparam ALUOP_ADD = 1;
@@ -27,18 +29,16 @@ module mu0 (
     wire [15:0] dataOut;
 
     memory mem (
-        .clk(clk),
+        .clk(fastClk),
         .memRq(_memRq),
         .readNotWrite(_readNotWrite),
         .addr(_addr),
         .dataIn(_dataIn),
         .dataOut(dataOut),
-        .led(led)
     );
 
     reg [15:0] acc = 0;
     reg [15:0] pc = 0;
-    reg [15:0] ir = 0;
 
     reg aSel = 0;
     reg bSel = 0;
@@ -93,7 +93,14 @@ module mu0 (
         done = 0;
     end
 
-    always @(posedge clk && enable) begin
+    always @(posedge clk) begin
+        if (oldStart != start) begin
+            oldStart = start;
+            state = PROC_STATE_FETCH;
+            acc = 0;
+            pc = 0;
+        end
+
         if (reset) begin
             state = PROC_STATE_FETCH;
             acc = 0;

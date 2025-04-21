@@ -25,7 +25,10 @@ module comm (
     output reg overrideMemRnW,
     output reg [15:0] overrideMemAddr,
     output reg [15:0] overrideMemDataIn,
-    input [15:0] overrideMemDataOut
+    input [15:0] overrideMemDataOut,
+
+    output reg start,
+    input enable
 );
     localparam COMM_STATE_IDLE = 0;
     localparam COMM_STATE_RXMEM = 2;
@@ -61,6 +64,19 @@ module comm (
                             byteReadyOut <= 1'b1;
                             dataOut <= "P";
                         end
+                        "x": begin
+                                byteReadyOut <= 1'b1;
+                                dataOut <= "X";
+                                start = ~start;
+                            end
+                        "s": begin
+                                byteReadyOut <= 1'b1;
+                                if (enable) begin
+                                    dataOut <= "+";
+                                end else begin
+                                    dataOut <= "-";
+                                end
+                            end
                         "r": begin
                             commState <= COMM_STATE_TXMEM;
                             memCounter <= 0;

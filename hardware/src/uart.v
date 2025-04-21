@@ -10,7 +10,9 @@ module uart #(
     output overrideMemRnW,
     output [15:0] overrideMemAddr,
     output [15:0] overrideMemDataIn,
-    input [15:0] overrideMemDataOut
+    input [15:0] overrideMemDataOut,
+    output start,
+    input enable
 );
 
     localparam HALF_DELAY_WAIT = (DELAY_FRAMES / 2);
@@ -143,6 +145,8 @@ module uart #(
         .overrideMemRnW(overrideMemRnW),
         .overrideMemAddr(overrideMemAddr),
         .overrideMemDataIn(overrideMemDataIn),
-        .overrideMemDataOut(overrideMemDataOut)
+        .overrideMemDataOut(overrideMemDataOut),
+        .start(start),
+        .enable(enable)
     );
 endmodule

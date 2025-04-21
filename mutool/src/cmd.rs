@@ -1,3 +1,4 @@
+mod exec;
 mod flash;
 mod list_ports;
 mod read;
@@ -30,6 +31,11 @@ pub enum Commands {
         /// Path to the firmware image for label resolution
         path: Option<String>,
     },
+    /// Start execution and wait
+    Exec {
+        /// Device
+        device: String,
+    },
 }
 
 impl Commands {
@@ -38,6 +44,7 @@ impl Commands {
             Commands::ListPorts => list_ports::list_ports(),
             Commands::Flash { path, device } => flash::flash(path, device),
             Commands::Read { device, path } => read::read(device, path),
+            Commands::Exec { device } => exec::exec(device),
         }
     }
 }

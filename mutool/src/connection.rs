@@ -87,6 +87,19 @@ impl Device {
             return None;
         }
     }
+
+    pub fn exec(&mut self) {
+        self.0.write(b"x").unwrap();
+        let mut buf = [0; 1024];
+        self.0.read(&mut buf).unwrap();
+    }
+
+    pub fn is_running(&mut self) -> bool {
+        self.0.write(b"s").unwrap();
+        let mut buf = [0; 1024];
+        self.0.read(&mut buf).unwrap();
+        return buf[0] == '+' as u8;
+    }
 }
 
 pub trait ToU16Vec {

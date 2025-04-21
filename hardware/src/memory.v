@@ -4,8 +4,7 @@ module memory (
     input             readNotWrite,
     input      [15:0] addr,
     input      [15:0] dataIn,
-    output reg [15:0] dataOut,
-    output reg [ 5:0] led
+    output reg [15:0] dataOut
 );
     reg [15:0] memory[32];
     wire [4:0] mem_addr = addr[4:0];
@@ -31,6 +30,4 @@ module memory (
             dataOut = 16'hbfbf;
         end
     end
-
-    assign led = ~memory[0][0:7];
 endmodule
