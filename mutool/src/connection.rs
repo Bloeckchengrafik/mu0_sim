@@ -120,14 +120,14 @@ impl Device {
         self.0.read(&mut buf).unwrap();
         sleep(Duration::from_millis(10));
         for i in 0..32 {
-            self.0.write(&[buffer[i * 2 + 1]]).unwrap();
+            self.0.write(&[buffer[i * 2]]).unwrap();
             sleep(Duration::from_millis(10));
             self.0.read(&mut buf).unwrap();
             print!("{}", char::from_u32(buf[0] as u32).unwrap());
             std::io::stdout().flush().unwrap();
             sleep(Duration::from_millis(10));
 
-            self.0.write(&[buffer[i * 2]]).unwrap();
+            self.0.write(&[buffer[i * 2 + 1]]).unwrap();
             sleep(Duration::from_millis(10));
             self.0.read(&mut buf).unwrap();
             print!("{}", char::from_u32(buf[0] as u32).unwrap());
@@ -155,10 +155,10 @@ impl Device {
             self.0.read_exact(&mut read_buffer).unwrap();
             self.0.write(&[0]).unwrap();
             self.0.read_exact(&mut read_buffer).unwrap();
-            buffer[i * 2] = read_buffer[0];
+            buffer[i * 2 + 1] = read_buffer[0];
             self.0.write(&[0]).unwrap();
             self.0.read_exact(&mut read_buffer).unwrap();
-            buffer[i * 2 + 1] = read_buffer[0];
+            buffer[i * 2] = read_buffer[0];
             print!("-+");
             std::io::stdout().flush().unwrap();
             sleep(Duration::from_millis(10));
@@ -182,10 +182,12 @@ impl Device {
     }
 
     pub fn is_running(&mut self) -> bool {
+        sleep(Duration::from_millis(10));
         self.0.write(b"s").unwrap();
         let mut buf = [0; 1024];
         self.0.read(&mut buf).unwrap();
-        return buf[0] == '+' as u8;
+        sleep(Duration::from_millis(10));
+        return buf[0] != b'-';
     }
 
     pub fn set_clock(&mut self, clock: ClockMode) {

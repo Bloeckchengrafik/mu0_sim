@@ -19,7 +19,7 @@ One:
 Count:
     DEFW 4
 Table:
-    DEFW 38
+    DEFW 39
     DEFW 25
     DEFW 4
     DEFW 98

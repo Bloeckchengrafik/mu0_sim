@@ -6,7 +6,6 @@ module mu0 (
     input [15:0] overrideMemAddr,
     input [15:0] overrideMemDataIn,
     input enable,
-    input reset,
     output reg [15:0] overrideMemDataOut,
     output reg done = 0,
     input start,
@@ -92,145 +91,136 @@ module mu0 (
     localparam OP_JNE = 4'b0110;
     localparam OP_STP = 4'b0111;
 
-    always @(posedge enable) begin
-        done = 0;
-    end
-
+    reg oldStart = 0;
     always @(posedge clk) begin
         if (oldStart != start) begin
             oldStart = start;
             state = PROC_STATE_FETCH;
             acc = 16'b0;
             pc = 16'b0;
+            done = 0;
         end
 
-        if (reset) begin
-            state = PROC_STATE_FETCH;
-            acc = 16'b0;
-            pc = 16'b0;
-            ir = 16'b0;
-        end else begin
-            case (state)
-                PROC_STATE_FETCH: begin
-                    aSel  = 0;
-                    accOe = 0;
-                    accIe = 0;
-                    pcOe  = 1;
-                    pcIe  = 1;
-                    irIe  = 1;
-                    op    = ALUOP_A_INC;
-                    memRq = 1;
-                    readNotWrite = 1;
+        case (state)
+            PROC_STATE_FETCH: begin
+                aSel  = 0;
+                accOe = 0;
+                accIe = 0;
+                pcOe  = 1;
+                pcIe  = 1;
+                irIe  = 1;
+                op    = ALUOP_A_INC;
+                memRq = 1;
+                readNotWrite = 1;
 
-                    state = PROC_STATE_FETCHSTORE;
+                state = PROC_STATE_FETCHSTORE;
+            end
+            PROC_STATE_EXEC: begin
+                state = PROC_STATE_STORE;
+                case (ir[15:12])
+                    OP_LDA: begin
+                        aSel  = 1;
+                        bSel  = 1;
+                        accOe = 0;
+                        accIe = 1;
+                        pcOe  = 0;
+                        pcIe  = 0;
+                        irIe  = 0;
+                        op    = ALUOP_B;
+                        memRq = 1;
+                        readNotWrite = 1;
+                    end
+                    OP_STO: begin
+                        aSel = 1;
+                        accOe = 1;
+                        accIe = 0;
+                        pcOe = 0;
+                        pcIe = 0;
+                        irIe = 0;
+                        memRq = 1;
+                        readNotWrite = 0;
+                    end
+                    OP_ADD: begin
+                        aSel = 1;
+                        bSel = 1;
+                        accOe = 1;
+                        accIe = 1;
+                        pcOe = 0;
+                        pcIe = 0;
+                        irIe = 0;
+                        op = ALUOP_ADD;
+                        memRq = 1;
+                        readNotWrite = 1;
+                    end
+                    OP_SUB: begin
+                        aSel = 1;
+                        bSel = 1;
+                        accOe = 1;
+                        accIe = 1;
+                        pcOe = 0;
+                        pcIe = 0;
+                        irIe = 0;
+                        op = ALUOP_SUB;
+                        memRq = 1;
+                        readNotWrite = 1;
+                    end
+                    OP_JMP: begin
+                        bSel = 0;
+                        accOe = 0;
+                        accIe = 0;
+                        pcOe = 0;
+                        pcIe = 1;
+                        irIe = 0;
+                        op = ALUOP_B;
+                        memRq = 0;
+                        readNotWrite = 1;
+                    end
+                    OP_JGE: begin
+                        bSel = 0;
+                        accOe = 0;
+                        accIe = 0;
+                        pcOe = 0;
+                        pcIe = ~acc[15];
+                        irIe = 0;
+                        op = ALUOP_B;
+                        memRq = 0;
+                        readNotWrite = 1;
+                    end
+                    OP_JNE: begin
+                        bSel = 0;
+                        accOe = 0;
+                        accIe = 0;
+                        pcOe = 0;
+                        pcIe = acc != 0;
+                        irIe = 0;
+                        op = ALUOP_B;
+                        memRq = 0;
+                        readNotWrite = 1;
+                    end
+                    OP_STP: begin
+                        done = 1'b1;
+                    end
+                endcase
+            end
+            PROC_STATE_FETCHSTORE, PROC_STATE_STORE: begin
+                if (accIe) begin
+                    acc = aluResult;
                 end
-                PROC_STATE_EXEC: begin
-                    state = PROC_STATE_STORE;
-                    case (ir[15:12])
-                        OP_LDA: begin
-                            aSel  = 1;
-                            bSel  = 1;
-                            accOe = 0;
-                            accIe = 1;
-                            pcOe  = 0;
-                            pcIe  = 0;
-                            irIe  = 0;
-                            op    = ALUOP_B;
-                            memRq = 1;
-                            readNotWrite = 1;
-                        end
-                        OP_STO: begin
-                            aSel = 1;
-                            accOe = 1;
-                            accIe = 0;
-                            pcOe = 0;
-                            pcIe = 0;
-                            irIe = 0;
-                            memRq = 1;
-                            readNotWrite = 0;
-                        end
-                        OP_ADD: begin
-                            aSel = 1;
-                            bSel = 1;
-                            accOe = 1;
-                            accIe = 1;
-                            pcOe = 0;
-                            pcIe = 0;
-                            irIe = 0;
-                            op = ALUOP_ADD;
-                            memRq = 1;
-                            readNotWrite = 1;
-                        end
-                        OP_SUB: begin
-                            aSel = 1;
-                            bSel = 1;
-                            accOe = 1;
-                            accIe = 1;
-                            pcOe = 0;
-                            pcIe = 0;
-                            irIe = 0;
-                            op = ALUOP_SUB;
-                            memRq = 1;
-                            readNotWrite = 1;
-                        end
-                        OP_JMP: begin
-                            bSel = 0;
-                            accOe = 0;
-                            accIe = 0;
-                            pcOe = 0;
-                            pcIe = 1;
-                            irIe = 0;
-                            op = ALUOP_B;
-                            memRq = 0;
-                            readNotWrite = 1;
-                        end
-                        OP_JGE: begin
-                            bSel = 0;
-                            accOe = 0;
-                            accIe = 0;
-                            pcOe = 0;
-                            pcIe = ~acc[15];
-                            irIe = 0;
-                            op = ALUOP_B;
-                            memRq = 0;
-                            readNotWrite = 1;
-                        end
-                        OP_JNE: begin
-                            bSel = 0;
-                            accOe = 0;
-                            accIe = 0;
-                            pcOe = 0;
-                            pcIe = acc != 0;
-                            irIe = 0;
-                            op = ALUOP_B;
-                            memRq = 0;
-                            readNotWrite = 1;
-                        end
-                        OP_STP: begin
-                            done = 1;
-                        end
-                    endcase
+
+                if (pcIe) begin
+                    pc = aluResult;
                 end
-                PROC_STATE_FETCHSTORE, PROC_STATE_STORE: begin
-                    if (accIe) begin
-                        acc = aluResult;
-                    end
 
-                    if (pcIe) begin
-                        pc = aluResult;
-                    end
-
-                    if (irIe) begin
-                        ir = dataOut;
-                    end
-
-                    if (state == PROC_STATE_FETCHSTORE) begin
-                        state = PROC_STATE_EXEC;
-                    end else begin
-                        state = PROC_STATE_FETCH;
-                    end
+                if (irIe) begin
+                    ir = dataOut;
                 end
-            endcase
-        end
+
+                if (state == PROC_STATE_FETCHSTORE) begin
+                    state = PROC_STATE_EXEC;
+                end else begin
+                    state = PROC_STATE_FETCH;
+                end
+            end
+        endcase
     end
 endmodule

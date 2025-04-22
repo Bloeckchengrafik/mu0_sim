@@ -11,6 +11,13 @@ pub fn read(port: &str, path: &Option<String>) {
         panic!("read failed");
     };
 
+    println!();
+
+    if let Some(debug) = device.get_debug() {
+        println!("Debug information:");
+        debug.print();
+    }
+
     print_memory(
         &buffer,
         path.clone()

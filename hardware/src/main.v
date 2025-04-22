@@ -39,8 +39,6 @@ module main (
         .overrideMemDataIn(overrideMemDataIn),
         .overrideMemDataOut(overrideMemDataOut),
         .enable(enable),
-        // .reset(btn1),
-        .reset(0),
         .done(done),
         .start(start),
         .ir(ir),
@@ -51,13 +49,12 @@ module main (
         .dbgAluOp(dbgAluOp)
     );
 
-    // assign led[0] = ~(slowClk);
-    // assign led[1] = ~enable;
-    // assign led[2] = ~overrideMemControl;
-    // assign led[3] = ~ir[14];
-    // assign led[4] = ~ir[13];
-    // assign led[5] = ~ir[12];
-    assign led[0:5] = pc[0:5];
+    assign led[0] = ~(slowClk);
+    assign led[1] = ~enable;
+    assign led[2] = ~overrideMemControl;
+    assign led[3] = ~ir[14];
+    assign led[4] = ~ir[13];
+    assign led[5] = ~ir[12];
 
     uart uart (
         .clk(clk),
@@ -85,14 +82,13 @@ module main (
         if (done) begin
             enable = 0;
         end
-        if (reset) begin
-            enable = 0;
-        end
         if (start != oldStart) begin
             oldStart = start;
             enable   = 1;
         end
+    end
 
+    always @(posedge clk) begin
         if (clkMode == CLK_MANUAL_ON) begin
             slowClk = 1;
         end else if (clkMode == CLK_MANUAL_OFF) begin
@@ -105,7 +101,7 @@ module main (
             end
         end else if (clkMode == CLK_FAST) begin
             slowClk = ~slowClk;
-        end else if (clkMode == CLK_OFF) begin
+        end else begin
             slowClk = 0;
         end
     end

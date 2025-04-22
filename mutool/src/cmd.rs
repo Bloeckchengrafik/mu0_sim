@@ -1,5 +1,6 @@
 mod debug;
 mod exec;
+mod exec_blocking;
 mod flash;
 mod list_ports;
 mod read;
@@ -32,8 +33,13 @@ pub enum Commands {
         /// Path to the firmware image for label resolution
         path: Option<String>,
     },
-    /// Start execution and wait
+    /// Start execution
     Exec {
+        /// Device
+        device: String,
+    },
+    /// Start execution and wait
+    ExecBlocking {
         /// Device
         device: String,
     },
@@ -49,6 +55,7 @@ impl Commands {
             Commands::Read { device, path } => read::read(device, path),
             Commands::Exec { device } => exec::exec(device),
             Commands::Debug { device } => debug::debug(device),
+            Commands::ExecBlocking { device } => exec_blocking::exec(device),
         }
     }
 }
